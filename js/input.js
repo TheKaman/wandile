@@ -53,17 +53,23 @@ var Input = {
     document.body.classList.add('touchmode');
     var self = this;
 
-    // go fullscreen on the first START tap (Android/tablets; iPhone ignores it)
-    var startBtn = document.getElementById('startbtn');
+    // go fullscreen + lock landscape on the first touch anywhere on the
+    // controls (Android/tablets; iPhone ignores it — Safari limitation)
     var wentFull = false;
-    if (startBtn) {
-      startBtn.addEventListener('pointerdown', function () {
-        if (wentFull) return;
-        wentFull = true;
-        var el = document.documentElement;
-        if (el.requestFullscreen) el.requestFullscreen().catch(function () {});
-      });
-    }
+    touchEl.addEventListener('pointerdown', function () {
+      if (wentFull) return;
+      wentFull = true;
+      var el = document.documentElement;
+      if (!el.requestFullscreen) return;
+      var p = el.requestFullscreen();
+      if (p && p.then) {
+        p.then(function () {
+          if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape').catch(function () {});
+          }
+        }).catch(function () { wentFull = false; });
+      }
+    });
 
     touchEl.querySelectorAll('.tbtn').forEach(function (b) {
       var act = b.getAttribute('data-action');

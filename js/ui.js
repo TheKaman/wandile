@@ -159,15 +159,16 @@ var UI = {
 
   // ----------------------------------------------------------------- title
   drawTitle: function (ctx, t, hi) {
+    var gy = CFG.H - 70;                      // ground line
     ctx.fillStyle = '#101018';
     ctx.fillRect(0, 0, CFG.W, CFG.H);
     for (var x = 0; x < CFG.W; x += 30) {
       var h = 20 + hash2(x, 5) * 40;
       ctx.fillStyle = '#1a1a26';
-      ctx.fillRect(x, 200 - h, 26, h);
+      ctx.fillRect(x, gy - h, 26, h);
     }
     ctx.fillStyle = '#16161f';
-    ctx.fillRect(0, 200, CFG.W, 70);
+    ctx.fillRect(0, gy, CFG.W, 70);
 
     var logoW = this.textW('WANDILE', 5);
     this.flagStripe(ctx, CFG.W / 2 - logoW / 2 - 10, 52, logoW + 20, 4);
@@ -177,13 +178,13 @@ var UI = {
     this.text(ctx, "A ZAMBIAN BEAT 'EM UP", CFG.W / 2, 118, 1, '#9aa1ab', 'center');
     if (hi > 0) this.text(ctx, 'HI SCORE ' + hi, CFG.W / 2, 136, 1, '#ef7d00', 'center');
 
-    Sprites.drawFighter(ctx, { x: CFG.W / 2 - 16, y: 218, facing: 1, pose: 'idle', t: t, c: Sprites.WANDILE });
-    Sprites.drawDog(ctx, CFG.W / 2 + 12, 218, -1, t, true);
+    Sprites.drawFighter(ctx, { x: CFG.W / 2 - 16, y: CFG.H - 52, facing: 1, pose: 'idle', t: t, c: Sprites.WANDILE });
+    Sprites.drawDog(ctx, CFG.W / 2 + 12, CFG.H - 52, -1, t, true);
 
     if (Math.floor(t * 2) % 2) {
-      this.text(ctx, this.isTouch() ? 'TAP START' : 'PRESS ENTER', CFG.W / 2, 238, 2, '#fff', 'center');
+      this.text(ctx, this.isTouch() ? 'TAP START' : 'PRESS ENTER', CFG.W / 2, CFG.H - 32, 2, '#fff', 'center');
     }
-    this.text(ctx, 'MADE WITH LOVE FOR WANDILE', CFG.W / 2, 260, 1, '#555', 'center');
+    this.text(ctx, 'MADE WITH LOVE FOR WANDILE', CFG.W / 2, CFG.H - 10, 1, '#555', 'center');
   },
 
   // ----------------------------------------------------------- how to play
@@ -209,19 +210,20 @@ var UI = {
       ['PAUSE / MUTE / FULL', 'P / M / F'],
     ];
     var y = 46;
+    var lx = CFG.W / 2 - 90;
     for (var i = 0; i < lines.length; i++) {
-      this.text(ctx, lines[i][0], 150, y, 1, '#ef7d00', 'right');
-      this.text(ctx, lines[i][1], 166, y, 1, '#fff');
+      this.text(ctx, lines[i][0], lx, y, 1, '#ef7d00', 'right');
+      this.text(ctx, lines[i][1], lx + 16, y, 1, '#fff');
       y += 14;
     }
     // the eagle itself, swooping in over the demo
-    Sprites.drawEagle(ctx, 380, 72, 1, t);
+    Sprites.drawEagle(ctx, CFG.W - 100, 72, 1, t);
 
     // little demo: Wandile bops a goon (right side, clear of the text)
     var demoPose = Math.floor(t * 2) % 2 ? 'punch1' : 'idle';
-    Sprites.drawFighter(ctx, { x: 408, y: 112, facing: 1, pose: demoPose, t: t, c: Sprites.WANDILE });
+    Sprites.drawFighter(ctx, { x: CFG.W - 72, y: 112, facing: 1, pose: demoPose, t: t, c: Sprites.WANDILE });
     Sprites.drawFighter(ctx, {
-      x: 442, y: 112, facing: -1, pose: demoPose === 'punch1' ? 'hurt' : 'idle', t: t,
+      x: CFG.W - 38, y: 112, facing: -1, pose: demoPose === 'punch1' ? 'hurt' : 'idle', t: t,
       c: { skin: '#b97a4e', head: Sprites.CROC_GREEN, headD: Sprites.CROC_GREEN_D, shirt: '#7b52b8', shirtD: '#23252b', pants: '#33363c', shoes: '#8f949b' },
       headMode: 'croc',
     });
@@ -241,7 +243,7 @@ var UI = {
     Sprites.drawItem(ctx, 'ball', CFG.W / 2 + 30, 225, 0);
 
     if (Math.floor(t * 2) % 2) {
-      this.text(ctx, touch ? 'TAP START OR PUNCH' : 'PRESS ENTER', CFG.W / 2, 246, 1, '#ffd23c', 'center');
+      this.text(ctx, touch ? 'TAP START OR PUNCH' : 'PRESS ENTER', CFG.W / 2, CFG.H - 24, 1, '#ffd23c', 'center');
     }
   },
 
@@ -253,22 +255,23 @@ var UI = {
   ],
 
   drawStory: function (ctx, panel, t) {
+    var cx = CFG.W / 2;
+    var px = cx - 150;
     ctx.fillStyle = '#101018';
     ctx.fillRect(0, 0, CFG.W, CFG.H);
     ctx.fillStyle = '#1c1c28';
-    ctx.fillRect(90, 36, 300, 130);
+    ctx.fillRect(px, 36, 300, 130);
     ctx.strokeStyle = '#ffd23c';
-    ctx.strokeRect(90.5, 36.5, 300, 130);
+    ctx.strokeRect(px + 0.5, 36.5, 300, 130);
 
-    var cx = CFG.W / 2;
     if (panel === 0) {
-      ctx.fillStyle = '#2a3a4a'; ctx.fillRect(91, 37, 298, 90);
-      ctx.fillStyle = '#3d4a3a'; ctx.fillRect(91, 127, 298, 38);
+      ctx.fillStyle = '#2a3a4a'; ctx.fillRect(px + 1, 37, 298, 90);
+      ctx.fillStyle = '#3d4a3a'; ctx.fillRect(px + 1, 127, 298, 38);
       Sprites.drawFighter(ctx, { x: cx - 20, y: 151, facing: 1, pose: 'idle', t: t, c: Sprites.WANDILE });
       Sprites.drawDog(ctx, cx + 14, 151, -1, t, true);
       Sprites.drawHeart(ctx, cx - 2, 106);
     } else if (panel === 1) {
-      ctx.fillStyle = '#3a2330'; ctx.fillRect(91, 37, 298, 128);
+      ctx.fillStyle = '#3a2330'; ctx.fillRect(px + 1, 37, 298, 128);
       var gx = cx + 30 + (t * 30) % 40;
       Sprites.drawFighter(ctx, {
         x: gx, y: 151, facing: 1, pose: 'walk', t: t,
@@ -279,7 +282,7 @@ var UI = {
       Sprites.drawFighter(ctx, { x: cx - 90, y: 151, facing: 1, pose: 'hurt', t: t, c: Sprites.WANDILE });
       this.text(ctx, '!', cx - 92, 90, 2, '#ffd23c', 'center');
     } else {
-      ctx.fillStyle = '#401818'; ctx.fillRect(91, 37, 298, 128);
+      ctx.fillStyle = '#401818'; ctx.fillRect(px + 1, 37, 298, 128);
       Sprites.drawFighter(ctx, { x: cx, y: 156, facing: 1, pose: 'punch3', t: t, c: Sprites.WANDILE, scale: 1.6 });
     }
 
@@ -288,20 +291,21 @@ var UI = {
     this.text(ctx, s.cap2, cx, 194, 1, '#fff', 'center');
     this.text(ctx, (panel + 1) + ' / 3', cx, 214, 1, '#666', 'center');
     if (Math.floor(t * 2) % 2) {
-      this.text(ctx, this.isTouch() ? 'PUNCH = NEXT   KICK = SKIP' : 'J = NEXT   K = SKIP STORY', cx, 240, 1, '#ffd23c', 'center');
+      this.text(ctx, this.isTouch() ? 'PUNCH = NEXT   KICK = SKIP' : 'J = NEXT   K = SKIP STORY', cx, CFG.H - 30, 1, '#ffd23c', 'center');
     }
   },
 
   // ----------------------------------------------------------- transitions
   drawStageCard: function (ctx, idx, t) {
     var def = Stages.DEFS[idx];
+    var oy = (CFG.H - 270) >> 1;
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, CFG.W, CFG.H);
-    this.flagStripe(ctx, CFG.W / 2 - 70, 92, 140, 3);
-    this.text(ctx, 'STAGE ' + (idx + 1), CFG.W / 2, 104, 2, '#ffd23c', 'center');
-    this.text(ctx, def.name, CFG.W / 2, 128, 2, '#fff', 'center');
-    this.text(ctx, def.sub, CFG.W / 2, 150, 1, '#9aa1ab', 'center');
-    this.flagStripe(ctx, CFG.W / 2 - 70, 166, 140, 3);
+    this.flagStripe(ctx, CFG.W / 2 - 70, 92 + oy, 140, 3);
+    this.text(ctx, 'STAGE ' + (idx + 1), CFG.W / 2, 104 + oy, 2, '#ffd23c', 'center');
+    this.text(ctx, def.name, CFG.W / 2, 128 + oy, 2, '#fff', 'center');
+    this.text(ctx, def.sub, CFG.W / 2, 150 + oy, 1, '#9aa1ab', 'center');
+    this.flagStripe(ctx, CFG.W / 2 - 70, 166 + oy, 140, 3);
   },
 
   drawStageClear: function (ctx, t, score) {
@@ -312,12 +316,13 @@ var UI = {
   },
 
   drawGameOver: function (ctx, t) {
+    var oy = (CFG.H - 270) >> 1;
     ctx.fillStyle = 'rgba(0,0,0,0.75)';
     ctx.fillRect(0, 0, CFG.W, CFG.H);
-    this.text(ctx, 'GAME OVER', CFG.W / 2, 96, 3, '#e8483a', 'center');
-    this.text(ctx, 'LOKI STILL NEEDS YOU!', CFG.W / 2, 134, 1, '#9aa1ab', 'center');
+    this.text(ctx, 'GAME OVER', CFG.W / 2, 96 + oy, 3, '#e8483a', 'center');
+    this.text(ctx, 'LOKI STILL NEEDS YOU!', CFG.W / 2, 134 + oy, 1, '#9aa1ab', 'center');
     if (Math.floor(t * 2) % 2) {
-      this.text(ctx, this.isTouch() ? 'TAP START TO CONTINUE' : 'PRESS ENTER TO CONTINUE', CFG.W / 2, 156, 1, '#fff', 'center');
+      this.text(ctx, this.isTouch() ? 'TAP START TO CONTINUE' : 'PRESS ENTER TO CONTINUE', CFG.W / 2, 156 + oy, 1, '#fff', 'center');
     }
   },
 
@@ -330,19 +335,19 @@ var UI = {
       ctx.fillRect(Math.floor(sx), Math.floor(sy), 1, 1);
     }
     ctx.fillStyle = '#16243a';
-    ctx.fillRect(0, 190, CFG.W, 80);
+    ctx.fillRect(0, CFG.H - 80, CFG.W, 80);
 
     this.text(ctx, 'YOU SAVED LOKI!', CFG.W / 2, 46, 3, '#ffd23c', 'center');
 
-    Sprites.drawFighter(ctx, { x: CFG.W / 2 - 14, y: 190, facing: 1, pose: 'victory', t: t, c: Sprites.WANDILE });
-    Sprites.drawDog(ctx, CFG.W / 2 + 16, 190, -1, t, true);
-    Sprites.drawHeart(ctx, CFG.W / 2 + 2, 140 + Math.floor(Math.sin(t * 3) * 3));
+    Sprites.drawFighter(ctx, { x: CFG.W / 2 - 14, y: CFG.H - 80, facing: 1, pose: 'victory', t: t, c: Sprites.WANDILE });
+    Sprites.drawDog(ctx, CFG.W / 2 + 16, CFG.H - 80, -1, t, true);
+    Sprites.drawHeart(ctx, CFG.W / 2 + 2, CFG.H - 130 + Math.floor(Math.sin(t * 3) * 3));
 
-    this.text(ctx, 'FINAL SCORE ' + score, CFG.W / 2, 210, 1, '#fff', 'center');
-    if (score >= hi && score > 0) this.text(ctx, 'NEW HI SCORE!', CFG.W / 2, 224, 1, '#ef7d00', 'center');
-    this.text(ctx, 'THE HERO OF ZAMBIA WALKS HOME WITH HIS BEST FRIEND.', CFG.W / 2, 242, 1, '#9aa1ab', 'center');
+    this.text(ctx, 'FINAL SCORE ' + score, CFG.W / 2, CFG.H - 58, 1, '#fff', 'center');
+    if (score >= hi && score > 0) this.text(ctx, 'NEW HI SCORE!', CFG.W / 2, CFG.H - 45, 1, '#ef7d00', 'center');
+    this.text(ctx, 'THE HERO OF ZAMBIA WALKS HOME WITH HIS BEST FRIEND.', CFG.W / 2, CFG.H - 28, 1, '#9aa1ab', 'center');
     if (t > 3 && Math.floor(t * 2) % 2) {
-      this.text(ctx, this.isTouch() ? 'TAP START' : 'PRESS ENTER', CFG.W / 2, 256, 1, '#fff', 'center');
+      this.text(ctx, this.isTouch() ? 'TAP START' : 'PRESS ENTER', CFG.W / 2, CFG.H - 13, 1, '#fff', 'center');
     }
   },
 

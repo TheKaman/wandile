@@ -24,15 +24,7 @@ var Game = {
     this.canvas = document.getElementById('game');
     this.ctx = this.canvas.getContext('2d');
     this.ctx.imageSmoothingEnabled = false;
-    // soft vignette overlay for a graded, modern look
-    this.vignette = document.createElement('canvas');
-    this.vignette.width = CFG.W; this.vignette.height = CFG.H;
-    var vc = this.vignette.getContext('2d');
-    var vg = vc.createRadialGradient(CFG.W / 2, CFG.H / 2, 110, CFG.W / 2, CFG.H / 2, 300);
-    vg.addColorStop(0, 'rgba(8,6,16,0)');
-    vg.addColorStop(1, 'rgba(8,6,16,0.4)');
-    vc.fillStyle = vg;
-    vc.fillRect(0, 0, CFG.W, CFG.H);
+    this.buildVignette();
     AudioSys.muted = localStorage.getItem('wandile_mute') === '1';
     Input.init();
     this.resize();
@@ -61,11 +53,41 @@ var Game = {
     requestAnimationFrame(loop);
   },
 
+  // soft vignette overlay for a graded, modern look
+  buildVignette: function () {
+    this.vignette = document.createElement('canvas');
+    this.vignette.width = CFG.W; this.vignette.height = CFG.H;
+    var vc = this.vignette.getContext('2d');
+    var vg = vc.createRadialGradient(CFG.W / 2, CFG.H / 2, 110, CFG.W / 2, CFG.H / 2, 300);
+    vg.addColorStop(0, 'rgba(8,6,16,0)');
+    vg.addColorStop(1, 'rgba(8,6,16,0.4)');
+    vc.fillStyle = vg;
+    vc.fillRect(0, 0, CFG.W, CFG.H);
+  },
+
+  // adapt the internal resolution to the screen's aspect ratio so the game
+  // fills the whole display — wider on phones, taller on squarer windows
   resize: function () {
-    var s = Math.min(window.innerWidth / CFG.W, window.innerHeight / CFG.H);
-    if (s >= 1) s = Math.floor(s);
-    this.canvas.style.width = CFG.W * s + 'px';
-    this.canvas.style.height = CFG.H * s + 'px';
+    var aspect = window.innerWidth / Math.max(1, window.innerHeight);
+    var W, H;
+    if (aspect >= 16 / 9) {
+      H = 270;
+      W = Math.min(Math.round(H * aspect / 2) * 2, 648);
+    } else {
+      W = 480;
+      H = Math.min(Math.round(W / aspect / 2) * 2, 330);
+    }
+    if (W !== CFG.W || H !== CFG.H || this.canvas.width !== W) {
+      CFG.W = W; CFG.H = H;
+      CFG.GROUND_BOTTOM = H - 12;
+      this.canvas.width = W; this.canvas.height = H;
+      this.ctx.imageSmoothingEnabled = false;   // canvas resize resets this
+      this.buildVignette();
+      if (Stages.current) Stages.prepare(Stages.idx);   // layers depend on CFG.W
+    }
+    var s = Math.min(window.innerWidth / W, window.innerHeight / H);
+    this.canvas.style.width = Math.round(W * s) + 'px';
+    this.canvas.style.height = Math.round(H * s) + 'px';
   },
 
   setState: function (s) {
