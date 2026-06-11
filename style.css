@@ -1,0 +1,77 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 100%; height: 100%;
+  background: #0b0b12;
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: none;          /* no pull-to-refresh mid-fight */
+  -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
+}
+#wrap {
+  position: relative;
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+}
+#game {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  background: #000;
+}
+
+/* ---- touch controls (shown only on coarse-pointer devices via JS) ---- */
+#touch { display: none; }
+#touch.on { display: block; }
+#dpad {
+  position: absolute; left: 4vw; bottom: 5vh;
+  width: 34vmin; height: 34vmin;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 2px solid rgba(255,255,255,0.25);
+}
+#btns {
+  position: absolute; right: 4vw; bottom: 5vh;
+  width: 38vmin; height: 38vmin;
+}
+.tbtn {
+  position: absolute;
+  width: 15vmin; height: 15vmin;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.10);
+  border: 2px solid rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.8);
+  font: bold 5vmin monospace;
+  display: flex; align-items: center; justify-content: center;
+}
+.tbtn.pressed { background: rgba(255,210,60,0.45); }
+#btns .tbtn[data-action="punch"]   { left: 0;       bottom: 8vmin; }
+#btns .tbtn[data-action="kick"]    { left: 11.5vmin; bottom: 18vmin; }
+#btns .tbtn[data-action="jump"]    { left: 23vmin;  bottom: 8vmin; }
+#btns .tbtn.special { left: 14vmin; bottom: 0; width: 10vmin; height: 10vmin;
+  font-size: 4vmin;
+  background: rgba(214,40,40,0.25); border-color: rgba(255,120,80,0.5); }
+#startbtn {
+  left: 50%; transform: translateX(-50%);
+  top: calc(2vh + env(safe-area-inset-top, 0px)); bottom: auto;
+  width: 22vmin; height: 8vmin;
+  border-radius: 2vmin; font-size: 3.4vmin;
+}
+/* respect notches / home indicator */
+#dpad { left: calc(4vw + env(safe-area-inset-left, 0px)); bottom: calc(5vh + env(safe-area-inset-bottom, 0px)); }
+#btns { right: calc(4vw + env(safe-area-inset-right, 0px)); bottom: calc(5vh + env(safe-area-inset-bottom, 0px)); }
+
+/* portrait phones: ask for landscape */
+#rotate {
+  display: none;
+  position: absolute; inset: 0;
+  z-index: 10;
+  background: #0b0b12;
+  color: #ffd23c;
+  font: bold 5vw monospace;
+  text-align: center;
+  align-items: center; justify-content: center;
+  padding: 8vw;
+}
+@media (orientation: portrait) {
+  body.touchmode #rotate { display: flex; }
+}

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>WANDILE test harness</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="wrap">
+  <canvas id="game" width="480" height="270"></canvas>
+  <div id="touch"></div>
+</div>
+<div id="err" style="position:fixed;top:0;left:0;color:red;font:13px monospace;background:#fff;z-index:99"></div>
+<script>
+window.onerror = function (msg, src, line) {
+  document.getElementById('err').textContent = 'ERROR: ' + msg + ' @ ' + src + ':' + line + ' || ' + document.getElementById('err').textContent;
+};
+</script>
+<script src="js/core.js"></script>
+<script src="js/input.js"></script>
+<script src="js/sprites.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/entities.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/stages.js"></script>
+<script src="js/main.js"></script>
+<script>
+// headless chrome stalls rAF under virtual time — pump the loop manually instead
+function key(k) {
+  window.dispatchEvent(new KeyboardEvent('keydown', { key: k }));
+  setTimeout(function () {
+    window.dispatchEvent(new KeyboardEvent('keyup', { key: k }));
+  }, 14);
+}
+var pumping = false;
+window.addEventListener('load', function () {
+  setTimeout(function () {
+    pumping = true;
+    setInterval(function () {
+      Game.update(1 / 60);
+      Input.endFrame();
+      Game.render();
+    }, 4);
+  }, 50);
+});
+
+// screenshot mode: ?shot=<state> freezes on one screen
+var shot = location.search.match(/shot=(\w+)/);
+window.addEventListener('load', function () {
+  if (shot) setTimeout(function () { Game.setState(shot[1]); }, 150);
+});
+
+// boss mode: ?boss=N drops the player right at stage N's boss trigger
+var bossM = location.search.match(/boss=(\d)/);
+var bossJumped = false;
+setInterval(function () {
+  if (!pumping || !bossM || bossJumped) return;
+  bossJumped = true;
+  Game.score = 0;
+  Game.stageIdx = parseInt(bossM[1], 10);
+  Game.startStage(Game.stageIdx);
+  Game.setState('play');
+  Game.world.player.x = Stages.DEFS[Game.stageIdx].boss.at + 2;
+}, 100);
+
+// eagle mode: ?eagle — keep casting Eagle Strike once the dialogue ends
+if (/eagle/.test(location.search)) {
+  setInterval(function () {
+    if (!pumping || Game.state !== 'play' || !Game.world || Game.world.dialog) return;
+    Game.world.player.meter = 100;
+    key('l');
+  }, 900);
+}
+
+// weapon mode: ?weapon=stick|lid|ball — equip it and keep swinging
+var weaponM = location.search.match(/weapon=(\w+)/);
+if (weaponM) {
+  setInterval(function () {
+    if (!pumping || Game.state !== 'play' || !Game.world || Game.world.dialog) return;
+    var p = Game.world.player;
+    if (!p.weapon) { p.weapon = weaponM[1]; p.weaponUses = 99; }
+    p.weaponUses = 99;
+    key('j');
+  }, 500);
+}
+
+// state-driven autoplayer
+setInterval(function () {
+  if (!pumping || shot || bossM) return;
+  if (Game.state === 'title' || Game.state === 'howto' || Game.state === 'story' || Game.state === 'gameover') key('Enter');
+  if (Game.state === 'ending' && Game.stateT > 3.2 && !/hold/.test(location.search)) key('Enter');
+}, 120);
+setInterval(function () {
+  if (!pumping || shot || bossM || Game.state !== 'play' || !Game.world) return;
+  var w = Game.world;
+  Input.down.right = !w.locked;
+  if (w.locked) {
+    // face nearest enemy lane and swing
+    var p = w.player, e = w.enemies[0];
+    if (e) {
+      Input.down.up = e.y < p.y - 6;
+      Input.down.down = e.y > p.y + 6;
+      Input.down.left = e.x < p.x - 14;
+      Input.down.right = e.x > p.x + 14;
+      p.facing = e.x > p.x ? 1 : -1;   // bots don't know how to turn around
+    }
+    key(Math.random() < 0.65 ? 'j' : 'k');
+    if (p.meter >= 50) key('l');
+  } else {
+    Input.down.up = Input.down.down = Input.down.left = false;
+  }
+}, 90);
+
+// optional fast-forward to a later stage via ?stage=N
+var m = location.search.match(/stage=(\d)/);
+if (m) {
+  var jumped = false;
+  setInterval(function () {
+    if (!jumped && pumping) {
+      jumped = true;
+      Game.score = 0;
+      Game.stageIdx = parseInt(m[1], 10);
+      Game.setState('card');
+    }
+  }, 100);
+}
+
+// diagnostics overlay (visible in screenshots)
+setInterval(function () {
+  if (!pumping) return;
+  var w = Game.world;
+  var el = document.getElementById('err');
+  el.textContent = 't=' + Game.t.toFixed(1) + ' st=' + Game.state + '/' + Game.stageIdx +
+    ' score=' + Game.score +
+    (w ? ' px=' + Math.round(w.player.x) + ' hp=' + w.player.hp + ' en=' + w.enemies.length +
+    ' wave=' + w.waveIdx + ' lock=' + w.locked : '') + ' || ' + el.textContent.slice(0, 300);
+}, 1500);
+</script>
+</body>
+</html>
